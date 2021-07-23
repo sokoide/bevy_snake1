@@ -284,14 +284,21 @@ fn game_over(
 }
 
 fn main() {
-    App::build()
-        .insert_resource(WindowDescriptor {
-            title: "Snake!".to_string(),
-            width: 500.0,
-            height: 500.0,
-            ..Default::default()
-        })
-        .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
+    let mut app = App::build();
+
+    app.insert_resource(WindowDescriptor {
+        title: "Snake!".to_string(),
+        width: 500.0,
+        height: 500.0,
+        ..Default::default()
+    });
+    app.add_plugins(DefaultPlugins);
+
+    // when building for Web, use WebGL2 rendering
+    #[cfg(target_arch = "wasm32")]
+    app.add_plugin(bevy_webgl2::WebGL2Plugin);
+
+    app.insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .insert_resource(SnakeSegments::default())
         .insert_resource(LastTailPosition::default())
         .add_event::<GrowthEvent>()
@@ -332,7 +339,7 @@ fn main() {
                         .after(SnakeMovement::Eating),
                 ),
         )
-        .add_system(game_over.system().after(SnakeMovement::Movement))
-        .add_plugins(DefaultPlugins)
-        .run();
+        .add_system(game_over.system().after(SnakeMovement::Movement));
+
+    app.run();
 }
